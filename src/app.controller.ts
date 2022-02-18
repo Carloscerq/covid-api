@@ -1,6 +1,8 @@
 import { Controller, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig();
 
 @Controller()
 export class AppController {
@@ -16,12 +18,14 @@ export class AppController {
     const { USA, Brazil, China, Russia } =
       await this.appService.getDataFromCovidApi();
 
-    const fileUsaBr = this.appService.createFiles([USA, Brazil]);
-    const fileCnRu = this.appService.createFiles([China, Russia]);
+    const fileUsaBr = this.appService.createFile([USA, Brazil]);
+    const fileCnRu = this.appService.createFile([China, Russia]);
 
     this.logger.log('Finish writing CSV files.');
 
-    this.appService.sendFilesToCloud(fileUsaBr);
-    this.appService.sendFilesToCloud(fileCnRu);
+    await this.appService.sendFileToCloud(fileUsaBr, process.env.USA_BR_BUCKET);
+    await this.appService.sendFileToCloud(fileCnRu, process.env.CN_RU_BUCKET);
+
+    this.logger.log('Finish sending files to cloud.');
   }
 }

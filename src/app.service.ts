@@ -1,13 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { writeFileSync } from 'fs';
+import { createReadStream, writeFileSync } from 'fs';
 import { Country } from './dto/country.dto';
 import { CountryList } from './dto/country-list.dto';
+import { config as dotenvConfig } from 'dotenv';
+import { AxiosResponse } from 'axios';
+import FormData from 'form-data';
+dotenvConfig();
 
 @Injectable()
 export class AppService {
   constructor(private readonly axios: HttpService) {}
+  private readonly logger = new Logger('AppService');
 
   async getDataFromCovidApi(): Promise<CountryList> {
     const { data } = await lastValueFrom(
@@ -24,7 +29,7 @@ export class AppService {
     return <CountryList>response;
   }
 
-  createFiles(data: Country[]): string {
+  createFile(data: Country[]): string {
     let fileName = '';
     const text: string[] = [
       'País, Casos hoje, Total de morte hoje, Data, Ativos, Em estado critíco',
@@ -43,6 +48,19 @@ export class AppService {
     return fileName;
   }
 
-  async sendFilesToCloud(fileName: string): Promise<void> {
+  async sendFileToCloud(fileName: string, dir: string): Promise<AxiosResponse> {
+    this.logger.debug(`Sending file ${fileName} to cloud`);
+    const formData = new FormData();
+    const file = createReadStream(`./${fileName}`);
+
+    formData.append('file', file);
+    formData.append('token', process.env.CLOUD_TOKEN);
+    formData.append('folderId', dir);
+
+    return lastValueFrom(
+      this.axios.post('https://store3.gofile.io/uploadFile', formData, {
+        headers: formData.getHeaders(),
+      }),
+    );
   }
 }
