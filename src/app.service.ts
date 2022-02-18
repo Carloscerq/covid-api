@@ -50,7 +50,7 @@ export class AppService {
 
   async sendFileToCloud(fileName: string, dir: string): Promise<AxiosResponse> {
     const formData = new FormData();
-    const file = createReadStream(`./${fileName}`);
+    const file = createReadStream(fileName);
 
     formData.append('file', file);
     formData.append('token', process.env.CLOUD_TOKEN);
