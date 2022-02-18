@@ -11,11 +11,17 @@ export class AppController {
     name: 'getDataFromCovidApi',
   })
   async getDataFromCovidApi() {
-    this.logger.debug('Starting getDataFromCovidApi');
+    this.logger.log('Starting getDataFromCovidApi.');
 
-    const data = await this.appService.getDataFromCovidApi();
-    this.logger.debug(data);
+    const { USA, Brazil, China, Russia } =
+      await this.appService.getDataFromCovidApi();
 
-    this.appService.getDataFromCovidApi();
+    const fileUsaBr = this.appService.createFiles([USA, Brazil]);
+    const fileCnRu = this.appService.createFiles([China, Russia]);
+
+    this.logger.log('Finish writing CSV files.');
+
+    this.appService.sendFilesToCloud(fileUsaBr);
+    this.appService.sendFilesToCloud(fileCnRu);
   }
 }
