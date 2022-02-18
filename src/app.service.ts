@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { createReadStream, writeFileSync } from 'fs';
+import { createReadStream, writeFileSync, unlink } from 'fs';
 import { Country } from './dto/country.dto';
 import { CountryList } from './dto/country-list.dto';
 import { config as dotenvConfig } from 'dotenv';
@@ -49,7 +49,6 @@ export class AppService {
   }
 
   async sendFileToCloud(fileName: string, dir: string): Promise<AxiosResponse> {
-    this.logger.debug(`Sending file ${fileName} to cloud`);
     const formData = new FormData();
     const file = createReadStream(`./${fileName}`);
 
@@ -62,5 +61,13 @@ export class AppService {
         headers: formData.getHeaders(),
       }),
     );
+  }
+
+  deleteFile(fileName: string): void {
+    unlink(fileName, (err) => {
+      if (err) {
+        this.logger.error(err);
+      }
+    });
   }
 }

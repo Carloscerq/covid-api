@@ -27,5 +27,10 @@ export class AppController {
     await this.appService.sendFileToCloud(fileCnRu, process.env.CN_RU_BUCKET);
 
     this.logger.log('Finish sending files to cloud.');
+
+    this.appService.deleteFile(fileUsaBr);
+    this.appService.deleteFile(fileCnRu);
+
+    this.logger.log('Finish deleting files.');
   }
 }
