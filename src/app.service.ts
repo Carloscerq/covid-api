@@ -7,6 +7,7 @@ import { CountryList } from './dto/country-list.dto';
 import { config as dotenvConfig } from 'dotenv';
 import { AxiosResponse } from 'axios';
 import FormData from 'form-data';
+import { ApiResponse } from './dto/api-response.dto';
 dotenvConfig();
 
 @Injectable()
@@ -22,8 +23,15 @@ export class AppService {
     );
 
     const response = {};
-    data.forEach((country: Country) => {
-      response[country.country] = country;
+    data.forEach((country: ApiResponse) => {
+      response[country.country] = {
+        pais: country.country,
+        casosHoje: country.todayCases,
+        totalMorteHoje: country.todayDeaths,
+        data: country.updated,
+        ativos: country.active,
+        EmEstadoCritico: country.critical,
+      };
     });
 
     return <CountryList>response;
@@ -37,9 +45,9 @@ export class AppService {
 
     data.forEach((country) => {
       text.push(
-        `${country.country}, ${country.todayCases}, ${country.todayDeaths}, ${country.updated}, ${country.active}, ${country.critical}`,
+        `${country.pais}, ${country.casosHoje}, ${country.totalMorteHoje}, ${country.data}, ${country.ativos}, ${country.EmEstadoCritico}`,
       );
-      fileName += `${country.country}_${country.updated}`;
+      fileName += `${country.pais}_${country.data}`;
     });
 
     fileName = fileName + '.csv';
